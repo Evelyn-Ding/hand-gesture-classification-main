@@ -1,0 +1,9 @@
+path: ../garbage/garbage_classification/  # dataset root dir
+
+train: /images
+val: /images
+test: /images
+
+
+nc: 12
+names: ['hands']

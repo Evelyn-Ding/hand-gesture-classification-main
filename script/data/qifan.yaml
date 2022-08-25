@@ -1,0 +1,9 @@
+path: ../qifandepthdata/  # dataset root dir
+
+train: qifantrain/images
+val: qifantrain/images
+test: qifantest/images
+
+
+nc: 1
+names: ['hands']
