@@ -207,11 +207,8 @@ def run(
                     vid_writer[i].write(im0)
 
         # Print time (inference-only)
-        LOGGER.info(f'{s}Done! ({t3 - t2:.3f}s)')
-        
-   
 
-       
+        LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
@@ -221,9 +218,6 @@ def run(
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
     if update:
         strip_optimizer(weights)  # update model (to fix SourceChangeWarning)
-
-     
-
 
 def parse_opt():
     parser = argparse.ArgumentParser()
@@ -268,4 +262,3 @@ if __name__ == "__main__":
     opt = parse_opt()
     main(opt)
     
-# hi
