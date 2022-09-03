@@ -1,0 +1,8 @@
+path: ../hand-gesture-classification/data/roboflowv18/
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 3
+names: ['fist', 'hands', 'peace']
