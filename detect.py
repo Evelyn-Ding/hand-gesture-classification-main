@@ -119,21 +119,21 @@ def run(
 
         # Inference
         visualize = increment_path(save_dir / Path(path).stem, mkdir=True) if visualize else False
-        pred = model(im, augment=augment, visualize=visualize)
+        pred = model(im, augment=augment, visualize=visualize) # prediction coming straight from the model
         t3 = time_sync()
         dt[1] += t3 - t2
 
         # NMS
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
-        # print(pred) # evelyn wants to know the prediction + figure out which index corresponds to which label
-
+        print(pred) # ★ evelyn wants to know the prediction of xyxy,conf,cls + figure out which index corresponds to which label (??)
+        
         dt[2] += time_sync() - t3
 
         # Second-stage classifier (optional)
         # pred = utils.general.apply_classifier(pred, classifier_model, im, im0s)
 
         # Process predictions
-        for i, det in enumerate(pred):  # per image
+        for i, det in enumerate(pred):  # per image # enumerate turns it into a tuple with the index (i) and its corresponding value (det). taken from pred
             seen += 1
             if webcam:  # batch_size >= 1
                 p, im0, frame = path[i], im0s[i].copy(), dataset.count
@@ -148,12 +148,13 @@ def run(
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             imc = im0.copy() if save_crop else im0  # for save_crop
             annotator = Annotator(im0, line_width=line_thickness, example=str(names))
-            if len(det):
+            if len(det): # refers to the corresponding value 
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results
-                print(det) # <-- ethan dis 4 the arduino
+                # print(det) # <-- ethan this is for the arduino
+                LOGGER.info(det) # ★ does the same thing as line 156
            
                 for c in det[:, -1].unique():
                     n = (det[:, -1] == c).sum()  # detections per class
@@ -161,7 +162,14 @@ def run(
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det): #BOUNDING BOX COORDINATES (corners i guess), CONFIDENCE, CLASS INDEX -EVELYN
-                    if save_txt:  # Write to file
+                    
+                    LOGGER.info("printing xywh and x1") # ★
+                    xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
+                    LOGGER.info(xywh)
+                    (x1, y1, x2, y2) = xywh  # this unpacks the tuple of xywh (all 4 coordinates)
+                    LOGGER.info(x1) 
+
+                    if save_txt:  # Write to file # defined as false by default
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         (x_left, y_left, x_right, y_right) = xywh  # new addition evelyn
                         LOGGER.info(x_left) # new addition
@@ -208,7 +216,9 @@ def run(
 
         # Print time (inference-only)
 
-        LOGGER.info(f'{s}Done. ({t3 - t2:.3f}s)')
+        LOGGER.info("________")
+        LOGGER.info(f'{s}Done.({t3 - t2:.3f}s)')
+        
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
