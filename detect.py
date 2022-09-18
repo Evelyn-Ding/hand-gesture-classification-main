@@ -125,7 +125,7 @@ def run(
 
         # NMS
         pred = non_max_suppression(pred, conf_thres, iou_thres, classes, agnostic_nms, max_det=max_det)
-        print(pred) # ★ evelyn wants to know the prediction of xyxy,conf,cls + figure out which index corresponds to which label (??)
+        # print(pred) # ★ evelyn wants to know the prediction of xyxy,conf,cls + figure out which index corresponds to which label (??)
         
         dt[2] += time_sync() - t3
 
@@ -153,21 +153,28 @@ def run(
                 det[:, :4] = scale_coords(im.shape[2:], det[:, :4], im0.shape).round()
 
                 # Print results
-                # print(det) # <-- ethan this is for the arduino
-                LOGGER.info(det) # ★ does the same thing as line 156
+                # print(det) # <--★ ethan,, this is for the arduino
+                # LOGGER.info(det) # ★ does the same thing as line 156
            
-                for c in det[:, -1].unique():
-                    n = (det[:, -1] == c).sum()  # detections per class
+                for c in det[:, -1].unique(): # getting the number of unique classes that exists
+                    n = (det[:, -1] == c).sum()  # detections per class, ex: 2 hands
                     s += f"{n} {names[int(c)]}{'s' * (n > 1)}, "  # add to string
 
                 # Write results
-                for *xyxy, conf, cls in reversed(det): #BOUNDING BOX COORDINATES (corners i guess), CONFIDENCE, CLASS INDEX -EVELYN
+
+                # everything in the loop goes through once for each prediction
+                # every prediction is logged separately
+                for i, (*xyxy, conf, cls) in enumerate(reversed(det)): #BOUNDING BOX COORDINATES (corners i guess), CONFIDENCE, CLASS INDEX -EVELYN
+
                     
-                    LOGGER.info("printing xywh and x1") # ★
-                    xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
-                    LOGGER.info(xywh)
-                    (x1, y1, x2, y2) = xywh  # this unpacks the tuple of xywh (all 4 coordinates)
-                    LOGGER.info(x1) 
+                    print(cls, i, xywh) # figure out which bounding box corresponds to which class
+                    LOGGER.info("X_Center, Y_Center") # ★
+                    xywh = xyxy2xywh(torch.tensor(xyxy).view(1, 4)).view(-1).tolist()
+                    #LOGGER.info(xywh)
+                    (x_center, y_center, width, height) = xywh  # this unpacks the tuple of xywh (all 4 coordinates)
+                    fstring = f"The center's coordinates are ({x_center}, {y_center})."
+                    LOGGER.info(fstring)
+
 
                     if save_txt:  # Write to file # defined as false by default
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
@@ -218,12 +225,13 @@ def run(
 
         LOGGER.info("________")
         LOGGER.info(f'{s}Done.({t3 - t2:.3f}s)')
+       
         
 
     # Print results
     t = tuple(x / seen * 1E3 for x in dt)  # speeds per image
     LOGGER.info(f'Speed: %.1fms pre-process, %.1fms inference, %.1fms NMS per image at shape {(1, 3, *imgsz)}' % t)
-    if save_txt or save_img:
+    if save_txt or save_img: #default is off though??? 
         s = f"\n{len(list(save_dir.glob('labels/*.txt')))} labels saved to {save_dir / 'labels'}" if save_txt else ''
         LOGGER.info(f"Results saved to {colorstr('bold', save_dir)}{s}")
     if update:
