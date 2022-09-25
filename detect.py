@@ -166,14 +166,14 @@ def run(
                 # every prediction is logged separately
                 for i, (*xyxy, conf, cls) in enumerate(reversed(det)): #BOUNDING BOX COORDINATES (corners i guess), CONFIDENCE, CLASS INDEX -EVELYN
 
-                    
-                    print(cls, i, xywh) # figure out which bounding box corresponds to which class
-                    LOGGER.info("X_Center, Y_Center") # ★
                     xywh = xyxy2xywh(torch.tensor(xyxy).view(1, 4)).view(-1).tolist()
                     #LOGGER.info(xywh)
                     (x_center, y_center, width, height) = xywh  # this unpacks the tuple of xywh (all 4 coordinates)
                     fstring = f"The center's coordinates are ({x_center}, {y_center})."
                     LOGGER.info(fstring)
+
+                    # print(cls, i, x_center, y_center) # figure out which bounding box corresponds to which class
+
 
 
                     if save_txt:  # Write to file # defined as false by default
@@ -207,7 +207,9 @@ def run(
                 if dataset.mode == 'image':
                     cv2.imwrite(save_path, im0)
                 else:  # 'video' or 'stream'
-                    if vid_path[i] != save_path:  # new video
+                    if i >= len(vid_path):
+                        continue # so if the index is bigger than the length of the videopath, then it goes back to the next step in the loop & ignores lines 212-224
+                    if vid_path[i] != save_path:  # new video (if i > len(vid_path), don't run) video path always has 1 path, despite number of predictions made in one run
                         vid_path[i] = save_path
                         if isinstance(vid_writer[i], cv2.VideoWriter):
                             vid_writer[i].release()  # release previous video writer
