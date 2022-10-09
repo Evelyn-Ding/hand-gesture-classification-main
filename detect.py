@@ -51,6 +51,7 @@ def run(
         weights=ROOT / 'yolov5s.pt',  # model.pt path(s)
         source=ROOT / 'data/roboflowv18/test',  # file/dir/URL/glob, 0 for webcam
         data=ROOT / 'data/coco128.yaml',  # dataset.yaml path
+        logfile =ROOT/'centerLog.txt', # log file for center location #LD
         imgsz=(640, 640),  # inference size (height, width)
         conf_thres=0.25,  # confidence threshold
         iou_thres=0.45,  # NMS IOU threshold
@@ -75,6 +76,7 @@ def run(
         half=False,  # use FP16 half-precision inference
         dnn=False,  # use OpenCV DNN for ONNX inference
 ):
+    center_log_file = open(logfile,"w")#LD
     source = str(source)
     save_img = not nosave and not source.endswith('.txt')  # save inference images
     is_file = Path(source).suffix[1:] in (IMG_FORMATS + VID_FORMATS)
@@ -171,7 +173,7 @@ def run(
                     (x_center, y_center, width, height) = xywh  # this unpacks the tuple of xywh (all 4 coordinates)
                     fstring = f"The center's coordinates are ({x_center}, {y_center})."
                     LOGGER.info(fstring)
-
+                    center_log_file.write(str(x_center) + ',' + str(y_center) + "\n")#LD
                     # print(cls, i, x_center, y_center) # figure out which bounding box corresponds to which class
 
 

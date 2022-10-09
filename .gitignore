@@ -162,3 +162,7 @@ cython_debug/
 
 # ignore all run videos
 runs/detect/*
+results/cendiffdata.png
+results/cenxydata.png
+results/cenydata.png
+results/colorful.png
